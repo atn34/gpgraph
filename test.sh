@@ -3,4 +3,4 @@
 set -euxo pipefail
 
 cd build
-ninja test
+./ninja test
