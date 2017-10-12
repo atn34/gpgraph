@@ -4,7 +4,7 @@
 #include <vector>
 
 class GpGraph {
-public:
+ public:
   GpGraph(int size) { nodes_.resize(size); };
   virtual ~GpGraph() {}
 
@@ -12,26 +12,28 @@ public:
 
   bool find_cycle(std::vector<int> *cycle = nullptr) {
     bool cycle_exists = false;
-    dfs(NoopNode{}, [this, cycle, &cycle_exists](Node &u_node, Node &v_node) {
-      if (v_node.color == Color::GREY) {
-        cycle_exists = true;
-        if (cycle != nullptr) {
-          int u = NodeIndex(u_node);
-          int v = NodeIndex(v_node);
-          while (u != v) {
-            cycle->push_back(u);
-            u = nodes_[u].parent;
+    dfs(NoopNode{},
+        [this, cycle, &cycle_exists](Node &u_node, Node &v_node) {
+          if (v_node.color == Color::GREY) {
+            cycle_exists = true;
+            if (cycle != nullptr) {
+              int u = NodeIndex(u_node);
+              int v = NodeIndex(v_node);
+              while (u != v) {
+                cycle->push_back(u);
+                u = nodes_[u].parent;
+              }
+              cycle->push_back(u);
+            }
+            return false;
           }
-          cycle->push_back(u);
-        }
-        return false;
-      }
-      return true;
-    }, NoopNode{});
+          return true;
+        },
+        NoopNode{});
     return cycle_exists;
   }
 
-private:
+ private:
   enum class Color : char { WHITE, GREY, BLACK };
 
   struct Node {
@@ -67,11 +69,12 @@ private:
   template <typename ProcessNodeEarly, typename ProcessEdge,
             typename ProcessNodeLate>
   struct Dfs {
-
     Dfs(ProcessNodeEarly process_node_early, ProcessEdge process_edge,
         ProcessNodeLate process_node_late, std::vector<Node> &nodes)
-        : process_node_early{process_node_early}, process_edge{process_edge},
-          process_node_late{process_node_late}, nodes{nodes} {}
+        : process_node_early{process_node_early},
+          process_edge{process_edge},
+          process_node_late{process_node_late},
+          nodes{nodes} {}
     ProcessNodeEarly process_node_early;
     ProcessEdge process_edge;
     ProcessNodeLate process_node_late;
