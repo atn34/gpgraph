@@ -1,3 +1,15 @@
+language: cpp
+sudo: false
+dist: trusty
+compiler:
+    - g++
+    - clang++
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+
 before_install:
     - sudo apt-get -qq update
     - sudo apt-get install google-mock libgtest-dev
