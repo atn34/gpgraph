@@ -1,5 +1,5 @@
 #ifndef GPGRAPH_H
-#define GPGRAPH_H value
+#define GPGRAPH_H
 
 #include <vector>
 
