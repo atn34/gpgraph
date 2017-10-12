@@ -71,10 +71,10 @@ class GpGraph {
   struct Dfs {
     Dfs(ProcessNodeEarly process_node_early, ProcessEdge process_edge,
         ProcessNodeLate process_node_late, std::vector<Node> &nodes)
-        : process_node_early{process_node_early},
-          process_edge{process_edge},
-          process_node_late{process_node_late},
-          nodes{nodes} {}
+        : process_node_early(process_node_early),
+          process_edge(process_edge),
+          process_node_late(process_node_late),
+          nodes(nodes) {}
     ProcessNodeEarly process_node_early;
     ProcessEdge process_edge;
     ProcessNodeLate process_node_late;
