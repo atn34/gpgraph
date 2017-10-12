@@ -5,7 +5,7 @@
 
 class GpGraph {
  public:
-  GpGraph(int size) { nodes_.resize(size); };
+  GpGraph(int size) : nodes_(size) {}
   virtual ~GpGraph() {}
 
   void add_edge(int u, int v) { nodes_[u].neighbors.push_back(v); }
