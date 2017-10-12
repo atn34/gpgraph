@@ -1,0 +1,7 @@
+before_install:
+    - sudo pip3 install meson
+    - sudo apt-get install ninja-build
+
+script:
+    - ./build.sh
+    - ./test.sh
