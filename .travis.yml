@@ -1,6 +1,6 @@
 before_install:
     - sudo apt-get -qq update
-    - sudo apt-get install python3-pip ninja
+    - sudo apt-get install python3-pip
     - sudo pip3 install meson
 
 script:
