@@ -1,7 +1,16 @@
 before_install:
-    - sudo apt-get install python3-pip ninja-build
+    - sudo apt-get -qq update
+    - sudo apt-get install python3-pip ninja-build ninja
     - sudo pip3 install meson
 
 script:
     - ./build.sh
     - ./test.sh
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
