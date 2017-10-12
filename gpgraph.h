@@ -62,8 +62,8 @@ class GpGraph {
            const ProcessEdge &process_edge,
            const ProcessNodeLate &process_node_late) {
     Dfs<const ProcessNodeEarly &, const ProcessEdge &, const ProcessNodeLate &>
-        dfs(process_node_early, process_edge, process_node_late, nodes_);
-    dfs.perform_dfs();
+        d(process_node_early, process_edge, process_node_late, nodes_);
+    d.perform_dfs();
   }
 
   template <typename ProcessNodeEarly, typename ProcessEdge,
@@ -71,40 +71,40 @@ class GpGraph {
   struct Dfs {
     Dfs(ProcessNodeEarly process_node_early, ProcessEdge process_edge,
         ProcessNodeLate process_node_late, std::vector<Node> &nodes)
-        : process_node_early(process_node_early),
-          process_edge(process_edge),
-          process_node_late(process_node_late),
-          nodes(nodes) {}
-    ProcessNodeEarly process_node_early;
-    ProcessEdge process_edge;
-    ProcessNodeLate process_node_late;
-    std::vector<Node> &nodes;
+        : process_node_early_(process_node_early),
+          process_edge_(process_edge),
+          process_node_late_(process_node_late),
+          nodes_(nodes) {}
+    ProcessNodeEarly process_node_early_;
+    ProcessEdge process_edge_;
+    ProcessNodeLate process_node_late_;
+    std::vector<Node> &nodes_;
 
     /**
-     * Precondition: \forall node \in nodes :
+     * Precondition: \forall node \in nodes_ :
      *      node.color == WHITE &&
      *      node.parent == -1 &&
      */
     void perform_dfs() {
-      for (auto &node : nodes) {
+      for (auto &node : nodes_) {
         if (node.color == Color::WHITE) {
-          dfs_helper(&node - &nodes[0]);
+          dfs_helper(&node - &nodes_[0]);
         }
       }
     }
 
     void dfs_helper(int u) {
-      auto &u_node = nodes[u];
+      auto &u_node = nodes_[u];
       u_node.color = Color::GREY;
-      if (!process_node_early(u_node)) {
+      if (!process_node_early_(u_node)) {
         return;
       }
       for (int v : u_node.neighbors) {
-        auto &v_node = nodes[v];
+        auto &v_node = nodes_[v];
         if (v_node.color == Color::WHITE) {
           v_node.parent = u;
         }
-        if (!process_edge(u_node, v_node)) {
+        if (!process_edge_(u_node, v_node)) {
           return;
         }
         if (v_node.color == Color::WHITE) {
@@ -112,7 +112,7 @@ class GpGraph {
         }
       }
       u_node.color = Color::BLACK;
-      process_node_late(u_node);
+      process_node_late_(u_node);
     }
   };
 

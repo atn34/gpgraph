@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-g++ -coverage -std=c++11 -Wall -Werror -Weffc++ gpgraph_test.cc -lgmock_main -lpthread
+${CC:-g++} -coverage -std=c++11 -Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic -Weffc++ gpgraph_test.cc -lgmock_main -lpthread
