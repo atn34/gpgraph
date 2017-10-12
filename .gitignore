@@ -37,6 +37,4 @@
 
 # End of https://www.gitignore.io/api/c++
 
-build
-subprojects/
-!subprojects/*.wrap
+*.gc*

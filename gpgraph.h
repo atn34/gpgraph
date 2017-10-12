@@ -37,7 +37,7 @@ class GpGraph {
   enum class Color : char { WHITE, GREY, BLACK };
 
   struct Node {
-    std::vector<int> neighbors;
+    std::vector<int> neighbors = {};
     Color color = Color::WHITE;
     int parent = -1;
   };

@@ -2,5 +2,6 @@
 
 set -euxo pipefail
 
-cd build
-./ninja test
+./a.out
+
+gcov gpgraph_test.cc > /dev/null
