@@ -9,6 +9,6 @@ if ! [ -f build/ninja ] ; then
     mv ninja build
     rm ninja-linux.zip
 fi
-meson -Db_coverage=true build
+PATH="$PATH:./build" meson -Db_coverage=true build
 cd build
 ./ninja
