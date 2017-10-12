@@ -1,6 +1,6 @@
 before_install:
     - sudo apt-get install python-pip ninja-build
-    - sudo pip3 install meson
+    - sudo pip install meson
 
 script:
     - ./build.sh
