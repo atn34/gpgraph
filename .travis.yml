@@ -1,6 +1,4 @@
 language: cpp
-sudo: false
-dist: trusty
 compiler:
     - g++
     - clang++
@@ -10,11 +8,8 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
 
-before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get install google-mock libgtest-dev
-
 script:
+    - sudo ./install-deps.sh
     - ./build.sh
     - ./test.sh
 
