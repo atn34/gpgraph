@@ -90,7 +90,6 @@ class GpGraph {
 
   struct ScratchFindCycle {
     Color color = Color::WHITE;
-    int parent = -1;
   };
 
   struct ScratchReportCycle {
