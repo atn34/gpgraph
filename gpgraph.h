@@ -40,6 +40,28 @@ class GpGraph {
     return cycle_exists;
   }
 
+  /**
+   * Modifies `order` to contain an ordering of elements such that for each edge
+   * (u, v), u is before v in order.
+   *
+   * Returns false if none exists.
+   */
+  bool topo_sort(std::vector<int> *order) {
+    order->clear();
+    bool cycle_exists = false;
+    dfs(NoopNode{},
+        [&cycle_exists](Node &, Node &v_node) {
+          if (v_node.color == Color::GREY) {
+            cycle_exists = true;
+            return false;
+          }
+          return true;
+        },
+        [this, order](Node &u_node) { order->push_back(NodeIndex(u_node)); });
+    std::reverse(order->begin(), order->end());
+    return !cycle_exists;
+  }
+
  private:
   enum class Color : char { WHITE, GREY, BLACK };
 
