@@ -19,11 +19,11 @@ class GpGraph {
    *
    * See gpgraph_test.cc for examples.
    */
-  bool find_cycle() {
+  bool find_cycle() const {
     init_scratch<ScratchFindCycle>();
     bool cycle_exists = false;
     dfs(NoopNode{},
-        [&cycle_exists](Node &, Node &v_node) {
+        [&cycle_exists](const Node &, const Node &v_node) {
           if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
             cycle_exists = true;
@@ -34,11 +34,11 @@ class GpGraph {
         NoopNode{});
     return cycle_exists;
   }
-  bool find_cycle(std::vector<int> *cycle) {
+  bool find_cycle(std::vector<int> *cycle) const {
     init_scratch<ScratchReportCycle>();
     bool cycle_exists = false;
     dfs(NoopNode{},
-        [this, cycle, &cycle_exists](Node &u_node, Node &v_node) {
+        [this, cycle, &cycle_exists](const Node &u_node, const Node &v_node) {
           if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
             cycle_exists = true;
@@ -65,12 +65,12 @@ class GpGraph {
    *
    * Returns false if none exists.
    */
-  bool topo_sort(std::vector<int> *order) {
+  bool topo_sort(std::vector<int> *order) const {
     init_scratch<ScratchFindCycle>();
     order->clear();
     bool cycle_exists = false;
     dfs(NoopNode{},
-        [&cycle_exists](Node &, Node &v_node) {
+        [&cycle_exists](const Node &, const Node &v_node) {
           if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
             cycle_exists = true;
@@ -78,7 +78,9 @@ class GpGraph {
           }
           return true;
         },
-        [this, order](Node &u_node) { order->push_back(NodeIndex(u_node)); });
+        [this, order](const Node &u_node) {
+          order->push_back(NodeIndex(u_node));
+        });
     std::reverse(order->begin(), order->end());
     return !cycle_exists;
   }
@@ -98,29 +100,29 @@ class GpGraph {
 
   struct Node {
     std::vector<int> neighbors = {};
-    char scratch[SCRATCH_SIZE_PER_NODE];
+    mutable char scratch[SCRATCH_SIZE_PER_NODE];
   };
 
   template <typename Scratch>
-  void init_scratch() {
+  void init_scratch() const {
     for (auto &node : nodes_) {
       new (&node.scratch) Scratch;
     }
   }
 
   struct NoopNode {
-    bool operator()(Node &) const { return true; }
+    bool operator()(const Node &) const { return true; }
   };
 
   struct NoopEdge {
-    bool operator()(Node &, Node &) const { return true; }
+    bool operator()(const Node &, const Node &) const { return true; }
   };
 
   template <typename ProcessNodeEarly, typename ProcessEdge,
             typename ProcessNodeLate>
   void dfs(const ProcessNodeEarly &process_node_early,
            const ProcessEdge &process_edge,
-           const ProcessNodeLate &process_node_late) {
+           const ProcessNodeLate &process_node_late) const {
     Dfs<const ProcessNodeEarly &, const ProcessEdge &, const ProcessNodeLate &>
         d(process_node_early, process_edge, process_node_late, nodes_);
     d.perform_dfs();
@@ -130,7 +132,7 @@ class GpGraph {
             typename ProcessNodeLate>
   struct Dfs {
     Dfs(ProcessNodeEarly process_node_early, ProcessEdge process_edge,
-        ProcessNodeLate process_node_late, std::vector<Node> &nodes)
+        ProcessNodeLate process_node_late, const std::vector<Node> &nodes)
         : process_node_early_(process_node_early),
           process_edge_(process_edge),
           process_node_late_(process_node_late),
@@ -138,7 +140,7 @@ class GpGraph {
     ProcessNodeEarly process_node_early_;
     ProcessEdge process_edge_;
     ProcessNodeLate process_node_late_;
-    std::vector<Node> &nodes_;
+    const std::vector<Node> &nodes_;
 
     void perform_dfs() {
       for (auto &node : nodes_) {
@@ -176,7 +178,7 @@ class GpGraph {
     }
   };
 
-  int NodeIndex(Node &node) { return &node - &nodes_[0]; }
+  int NodeIndex(const Node &node) const { return &node - &nodes_[0]; }
 
   std::vector<Node> nodes_;
 };
