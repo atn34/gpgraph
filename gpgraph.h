@@ -4,19 +4,24 @@
 #include <algorithm>
 #include <vector>
 
+struct Empty {};
+
 /**
  * Graph library that can use a configurable amount of scratch space per node.
  *
  * That way, if you only use algorithms that require little scratch space you
  * don't have to pay the extra memory.
  */
-template <int SCRATCH_SIZE_PER_NODE = 8>
+template <int SCRATCH_SIZE_PER_NODE = 8, typename EdgeData = Empty>
 class GpGraph {
  public:
-  GpGraph(int size) : nodes_(size) {}
+  explicit GpGraph(int size) : nodes_(size) {}
   virtual ~GpGraph() {}
 
-  void add_edge(int u, int v) { nodes_[u].neighbors.push_back(v); }
+  template <typename... Ts>
+  void add_edge(int u, int v, Ts &&... args) {
+    nodes_[u].neighbors.emplace_back(Edge{v, args...});
+  }
 
   /**
    * Reports if a cycle exists. If `cycle` != nullptr, push elements along one
@@ -32,7 +37,8 @@ class GpGraph {
     init_scratch<Scratch>();
     bool cycle_exists = false;
     dfs<Scratch>(NoopNode{},
-                 [&cycle_exists](const Node &, const Node &v_node) {
+                 [this, &cycle_exists](const Node &, const Edge &edge) {
+                   const Node &v_node = nodes_[edge.neighbor];
                    if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
                        Color::GREY) {
                      cycle_exists = true;
@@ -51,7 +57,8 @@ class GpGraph {
     bool cycle_exists = false;
     dfs<Scratch>(
         NoopNode{},
-        [this, cycle, &cycle_exists](const Node &u_node, const Node &v_node) {
+        [this, cycle, &cycle_exists](const Node &u_node, const Edge &edge) {
+          const Node &v_node = nodes_[edge.neighbor];
           int u = NodeIndex(u_node);
           int v = NodeIndex(v_node);
           if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
@@ -89,7 +96,8 @@ class GpGraph {
     order->clear();
     bool cycle_exists = false;
     dfs<Scratch>(NoopNode{},
-                 [&cycle_exists](const Node &, const Node &v_node) {
+                 [this, &cycle_exists](const Node &, const Edge &edge) {
+                   const Node &v_node = nodes_[edge.neighbor];
                    if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
                        Color::GREY) {
                      cycle_exists = true;
@@ -116,8 +124,17 @@ class GpGraph {
     Color color = Color::WHITE;
   };
 
+  // Inherit from EdgeData to enable empty base optimization if EdgeData is an
+  // empty class.
+  struct Edge : public EdgeData {
+    template <typename... Ts>
+    Edge(int n, Ts &&... args) : EdgeData(args...), neighbor{n} {}
+
+    int neighbor;
+  };
+
   struct Node {
-    std::vector<int> neighbors = {};
+    std::vector<Edge> neighbors = {};
     mutable char scratch[SCRATCH_SIZE_PER_NODE];
   };
 
@@ -175,9 +192,10 @@ class GpGraph {
       if (!process_node_early_(u_node)) {
         return;
       }
-      for (int v : u_node.neighbors) {
+      for (const auto &edge : u_node.neighbors) {
+        int v = edge.neighbor;
         auto &v_node = nodes_[v];
-        if (!process_edge_(u_node, v_node)) {
+        if (!process_edge_(u_node, edge)) {
           return;
         }
         if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==

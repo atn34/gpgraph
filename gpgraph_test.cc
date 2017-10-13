@@ -75,3 +75,12 @@ TEST(TopoSort, Cycle) {
   std::vector<int> sorted;
   EXPECT_FALSE(g.topo_sort(&sorted));
 }
+
+TEST(EdgeData, Weights) {
+  struct Edge {
+    explicit Edge(int w) : weight(w) {}
+    int weight;
+  };
+  GpGraph<1, Edge> g(3);
+  g.add_edge(0, 1, 100);
+}
