@@ -10,6 +10,13 @@ class GpGraph {
 
   void add_edge(int u, int v) { nodes_[u].neighbors.push_back(v); }
 
+  /**
+   * Reports if a cycle exists. If `cycle` != nullptr, push elements along one
+   * cycle in reverse order onto `cycle`. If multiple cycles exist, the
+   * particular cycle returned is unspecified.
+   *
+   * See gpgraph_test.cc for examples.
+   */
   bool find_cycle(std::vector<int> *cycle = nullptr) {
     bool cycle_exists = false;
     dfs(NoopNode{},
