@@ -22,7 +22,8 @@ class GpGraph {
   bool find_cycle() const {
     init_scratch<ScratchFindCycle>();
     bool cycle_exists = false;
-    dfs(NoopNode{},
+    dfs<ScratchFindCycle>(
+        NoopNode{},
         [&cycle_exists](const Node &, const Node &v_node) {
           if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
@@ -37,14 +38,19 @@ class GpGraph {
   bool find_cycle(std::vector<int> *cycle) const {
     init_scratch<ScratchReportCycle>();
     bool cycle_exists = false;
-    dfs(NoopNode{},
+    dfs<ScratchReportCycle>(
+        NoopNode{},
         [this, cycle, &cycle_exists](const Node &u_node, const Node &v_node) {
+          int u = NodeIndex(u_node);
+          int v = NodeIndex(v_node);
+          if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
+              Color::WHITE) {
+            reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->parent = u;
+          }
           if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
             cycle_exists = true;
             if (cycle != nullptr) {
-              int u = NodeIndex(u_node);
-              int v = NodeIndex(v_node);
               while (u != v) {
                 cycle->push_back(u);
                 u = reinterpret_cast<ScratchReportCycle *>(&nodes_[u].scratch)
@@ -69,7 +75,8 @@ class GpGraph {
     init_scratch<ScratchFindCycle>();
     order->clear();
     bool cycle_exists = false;
-    dfs(NoopNode{},
+    dfs<ScratchFindCycle>(
+        NoopNode{},
         [&cycle_exists](const Node &, const Node &v_node) {
           if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
               Color::GREY) {
@@ -117,18 +124,19 @@ class GpGraph {
     bool operator()(const Node &, const Node &) const { return true; }
   };
 
-  template <typename ProcessNodeEarly, typename ProcessEdge,
+  template <typename Scratch, typename ProcessNodeEarly, typename ProcessEdge,
             typename ProcessNodeLate>
   void dfs(const ProcessNodeEarly &process_node_early,
            const ProcessEdge &process_edge,
            const ProcessNodeLate &process_node_late) const {
-    Dfs<const ProcessNodeEarly &, const ProcessEdge &, const ProcessNodeLate &>
+    Dfs<const ProcessNodeEarly &, const ProcessEdge &, const ProcessNodeLate &,
+        Scratch>
         d(process_node_early, process_edge, process_node_late, nodes_);
     d.perform_dfs();
   }
 
   template <typename ProcessNodeEarly, typename ProcessEdge,
-            typename ProcessNodeLate>
+            typename ProcessNodeLate, typename Scratch>
   struct Dfs {
     Dfs(ProcessNodeEarly process_node_early, ProcessEdge process_edge,
         ProcessNodeLate process_node_late, const std::vector<Node> &nodes)
@@ -143,8 +151,7 @@ class GpGraph {
 
     void perform_dfs() {
       for (auto &node : nodes_) {
-        if (reinterpret_cast<ScratchReportCycle *>(&node.scratch)->color ==
-            Color::WHITE) {
+        if (reinterpret_cast<Scratch *>(&node.scratch)->color == Color::WHITE) {
           dfs_helper(&node - &nodes_[0]);
         }
       }
@@ -152,27 +159,21 @@ class GpGraph {
 
     void dfs_helper(int u) {
       auto &u_node = nodes_[u];
-      reinterpret_cast<ScratchReportCycle *>(&u_node.scratch)->color =
-          Color::GREY;
+      reinterpret_cast<Scratch *>(&u_node.scratch)->color = Color::GREY;
       if (!process_node_early_(u_node)) {
         return;
       }
       for (int v : u_node.neighbors) {
         auto &v_node = nodes_[v];
-        if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
-            Color::WHITE) {
-          reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->parent = u;
-        }
         if (!process_edge_(u_node, v_node)) {
           return;
         }
-        if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
+        if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
             Color::WHITE) {
           dfs_helper(v);
         }
       }
-      reinterpret_cast<ScratchReportCycle *>(&u_node.scratch)->color =
-          Color::BLACK;
+      reinterpret_cast<Scratch *>(&u_node.scratch)->color = Color::BLACK;
       process_node_late_(u_node);
     }
   };
