@@ -4,15 +4,32 @@
 #include "gpgraph.h"
 
 TEST(Cycle, NoCycle) {
-  GpGraph g(3);
+  GpGraph<1> g(3);
   g.add_edge(0, 1);
   g.add_edge(0, 2);
   g.add_edge(1, 2);
   EXPECT_FALSE(g.find_cycle());
 }
 
-TEST(Cycle, Cycle1) {
-  GpGraph g(3);
+TEST(Cycle, CycleDontReport) {
+  GpGraph<1> g(3);
+  g.add_edge(0, 1);
+  g.add_edge(1, 2);
+  g.add_edge(2, 0);
+  EXPECT_TRUE(g.find_cycle());
+}
+
+TEST(Cycle, NoCycleReport) {
+  GpGraph<> g(3);
+  g.add_edge(0, 1);
+  g.add_edge(0, 2);
+  g.add_edge(1, 2);
+  std::vector<int> cycle;
+  EXPECT_FALSE(g.find_cycle(&cycle));
+}
+
+TEST(Cycle, CycleReport1) {
+  GpGraph<> g(3);
   g.add_edge(0, 1);
   g.add_edge(1, 2);
   g.add_edge(2, 0);
@@ -21,8 +38,8 @@ TEST(Cycle, Cycle1) {
   EXPECT_THAT(cycle, testing::ElementsAre(2, 1, 0));
 }
 
-TEST(Cycle, Cycle2) {
-  GpGraph g(5);
+TEST(Cycle, CycleReport2) {
+  GpGraph<8> g(5);
   g.add_edge(0, 1);
   g.add_edge(0, 4);
   g.add_edge(1, 2);
@@ -35,7 +52,7 @@ TEST(Cycle, Cycle2) {
 }
 
 TEST(TopoSort, NoCycle) {
-  GpGraph g(4);
+  GpGraph<1> g(4);
   // Tree edges
   g.add_edge(0, 1);
   g.add_edge(1, 2);
@@ -51,7 +68,7 @@ TEST(TopoSort, NoCycle) {
 }
 
 TEST(TopoSort, Cycle) {
-  GpGraph g(3);
+  GpGraph<1> g(3);
   g.add_edge(0, 1);
   g.add_edge(1, 2);
   g.add_edge(2, 0);
