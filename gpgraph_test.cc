@@ -4,7 +4,7 @@
 #include "gpgraph.h"
 
 TEST(Cycle, NoCycle) {
-  GpGraph g(3);
+  GpGraph<> g(3);
   g.add_edge(0, 1);
   g.add_edge(0, 2);
   g.add_edge(1, 2);
@@ -12,7 +12,7 @@ TEST(Cycle, NoCycle) {
 }
 
 TEST(Cycle, Cycle1) {
-  GpGraph g(3);
+  GpGraph<> g(3);
   g.add_edge(0, 1);
   g.add_edge(1, 2);
   g.add_edge(2, 0);
@@ -22,7 +22,7 @@ TEST(Cycle, Cycle1) {
 }
 
 TEST(Cycle, Cycle2) {
-  GpGraph g(5);
+  GpGraph<> g(5);
   g.add_edge(0, 1);
   g.add_edge(0, 4);
   g.add_edge(1, 2);
@@ -35,7 +35,7 @@ TEST(Cycle, Cycle2) {
 }
 
 TEST(TopoSort, NoCycle) {
-  GpGraph g(4);
+  GpGraph<> g(4);
   // Tree edges
   g.add_edge(0, 1);
   g.add_edge(1, 2);
@@ -51,7 +51,7 @@ TEST(TopoSort, NoCycle) {
 }
 
 TEST(TopoSort, Cycle) {
-  GpGraph g(3);
+  GpGraph<> g(3);
   g.add_edge(0, 1);
   g.add_edge(1, 2);
   g.add_edge(2, 0);
