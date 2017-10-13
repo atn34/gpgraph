@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <vector>
 
+/**
+ * Graph library that can use a configurable amount of scratch space per node.
+ *
+ * That way, if you only use algorithms that require little scratch space you
+ * don't have to pay the extra memory.
+ */
 template <int SCRATCH_SIZE_PER_NODE = 8>
 class GpGraph {
  public:
@@ -20,41 +26,45 @@ class GpGraph {
    * See gpgraph_test.cc for examples.
    */
   bool find_cycle() const {
-    init_scratch<ScratchFindCycle>();
+    using Scratch = ScratchFindCycle;
+    static_assert(SCRATCH_SIZE_PER_NODE >= sizeof(Scratch),
+                  "Increase SCRATCH_SIZE_PER_NODE");
+    init_scratch<Scratch>();
     bool cycle_exists = false;
-    dfs<ScratchFindCycle>(
-        NoopNode{},
-        [&cycle_exists](const Node &, const Node &v_node) {
-          if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
-              Color::GREY) {
-            cycle_exists = true;
-            return false;
-          }
-          return true;
-        },
-        NoopNode{});
+    dfs<Scratch>(NoopNode{},
+                 [&cycle_exists](const Node &, const Node &v_node) {
+                   if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
+                       Color::GREY) {
+                     cycle_exists = true;
+                     return false;
+                   }
+                   return true;
+                 },
+                 NoopNode{});
     return cycle_exists;
   }
   bool find_cycle(std::vector<int> *cycle) const {
-    init_scratch<ScratchReportCycle>();
+    using Scratch = ScratchReportCycle;
+    static_assert(SCRATCH_SIZE_PER_NODE >= sizeof(Scratch),
+                  "Increase SCRATCH_SIZE_PER_NODE");
+    init_scratch<Scratch>();
     bool cycle_exists = false;
-    dfs<ScratchReportCycle>(
+    dfs<Scratch>(
         NoopNode{},
         [this, cycle, &cycle_exists](const Node &u_node, const Node &v_node) {
           int u = NodeIndex(u_node);
           int v = NodeIndex(v_node);
-          if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
+          if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
               Color::WHITE) {
-            reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->parent = u;
+            reinterpret_cast<Scratch *>(&v_node.scratch)->parent = u;
           }
-          if (reinterpret_cast<ScratchReportCycle *>(&v_node.scratch)->color ==
+          if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
               Color::GREY) {
             cycle_exists = true;
             if (cycle != nullptr) {
               while (u != v) {
                 cycle->push_back(u);
-                u = reinterpret_cast<ScratchReportCycle *>(&nodes_[u].scratch)
-                        ->parent;
+                u = reinterpret_cast<Scratch *>(&nodes_[u].scratch)->parent;
               }
               cycle->push_back(u);
             }
@@ -72,22 +82,24 @@ class GpGraph {
    * Returns false if none exists.
    */
   bool topo_sort(std::vector<int> *order) const {
-    init_scratch<ScratchFindCycle>();
+    using Scratch = ScratchFindCycle;
+    static_assert(SCRATCH_SIZE_PER_NODE >= sizeof(Scratch),
+                  "Increase SCRATCH_SIZE_PER_NODE");
+    init_scratch<Scratch>();
     order->clear();
     bool cycle_exists = false;
-    dfs<ScratchFindCycle>(
-        NoopNode{},
-        [&cycle_exists](const Node &, const Node &v_node) {
-          if (reinterpret_cast<ScratchFindCycle *>(&v_node.scratch)->color ==
-              Color::GREY) {
-            cycle_exists = true;
-            return false;
-          }
-          return true;
-        },
-        [this, order](const Node &u_node) {
-          order->push_back(NodeIndex(u_node));
-        });
+    dfs<Scratch>(NoopNode{},
+                 [&cycle_exists](const Node &, const Node &v_node) {
+                   if (reinterpret_cast<Scratch *>(&v_node.scratch)->color ==
+                       Color::GREY) {
+                     cycle_exists = true;
+                     return false;
+                   }
+                   return true;
+                 },
+                 [this, order](const Node &u_node) {
+                   order->push_back(NodeIndex(u_node));
+                 });
     std::reverse(order->begin(), order->end());
     return !cycle_exists;
   }
@@ -100,8 +112,8 @@ class GpGraph {
   };
 
   struct ScratchReportCycle {
-    Color color = Color::WHITE;
     int parent = -1;
+    Color color = Color::WHITE;
   };
 
   struct Node {
