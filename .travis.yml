@@ -7,8 +7,10 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
 
-script:
+before_install:
     - sudo ./install-deps.sh
+
+script:
     - ./build.sh
     - ./test.sh
 
