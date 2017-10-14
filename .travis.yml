@@ -1,6 +1,6 @@
 language: cpp
 compiler:
-    - g++
+    - g++-5
 
 addons:
     apt:
