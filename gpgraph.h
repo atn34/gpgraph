@@ -20,7 +20,7 @@ class GpGraph {
 
   template <typename... Ts>
   void add_edge(int u, int v, Ts &&... args) {
-    nodes_[u].neighbors.emplace_back(Edge{v, args...});
+    nodes_[u].neighbors.emplace_back(v, std::forward<Ts>(args)...);
   }
 
   /**
@@ -128,7 +128,8 @@ class GpGraph {
   // empty class.
   struct Edge : public EdgeData {
     template <typename... Ts>
-    Edge(int n, Ts &&... args) : EdgeData(args...), neighbor{n} {}
+    Edge(int n, Ts &&... args)
+        : EdgeData(std::forward<Ts>(args)...), neighbor{n} {}
 
     int neighbor;
   };
