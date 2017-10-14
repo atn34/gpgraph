@@ -1,12 +1,6 @@
 language: cpp
-compiler:
-    - g++-5
-
-addons:
-    apt:
-        sources:
-            - ubuntu-toolchain-r-test
-            - g++-5
+sudo: required
+dist: trusty
 
 before_install:
     - sudo ./install-deps.sh
